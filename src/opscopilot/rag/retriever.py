@@ -31,16 +31,20 @@ def _tokenize(text: str) -> list[str]:
 
 
 def reciprocal_rank_fusion(rank_lists: list[list[Document]], k: int = 60) -> list[Document]:
-    """RRF：分数 = Σ 1/(k + rank)。k=60 是业界经验值，平滑头部优势。"""
-    scores: dict[int, float] = {}
-    docs_by_id: dict[int, Document] = {}
+    """RRF：分数 = Σ 1/(k + rank)。k=60 是业界经验值，平滑头部优势。
+
+    用 page_content 做去重键——向量召回和 BM25 召回同一 chunk 时是不同 Document
+    对象，按 id 去重会导致同内容不被合并、RRF 退化为拼接；按内容合并才是真正融合。
+    """
+    scores: dict[str, float] = {}
+    docs_by_key: dict[str, Document] = {}
     for doc_list in rank_lists:
         for rank, doc in enumerate(doc_list):
-            did = id(doc)
-            docs_by_id[did] = doc
-            scores[did] = scores.get(did, 0.0) + 1.0 / (k + rank)
+            key = doc.page_content
+            docs_by_key[key] = doc
+            scores[key] = scores.get(key, 0.0) + 1.0 / (k + rank)
     ordered = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
-    return [docs_by_id[did] for did, _ in ordered]
+    return [docs_by_key[key] for key, _ in ordered]
 
 
 # -------------------------------------------------------------------- Reranker
