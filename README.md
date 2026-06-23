@@ -117,11 +117,11 @@ cp .env.example .env          # 填阿里云百炼 key（LLM_API_KEY / LLM_BASE_
 python scripts/ingest.py --reset
 
 # 3. 启动服务
-python -m opscopilot.api      # → http://127.0.0.1:8000
+python -m opscopilot.api      # → http://127.0.0.1:8001
 
 # 4. 触发一次告警，体验完整闭环
 python scripts/trigger_alert.py 5xx        # 或 oom / latency / dbpool
-curl http://127.0.0.1:8000/api/incidents   # 看排障结果
+curl http://127.0.0.1:8001/api/incidents   # 看排障结果
 
 # 5. 其他
 python scripts/eval_rag.py                  # RAG 评估对比
@@ -129,9 +129,100 @@ pytest                                       # 单元测试
 python mcp/run_github_server.py             # 自研 MCP Server
 ```
 
-浏览器打开 **http://127.0.0.1:8000** → 「告警排障」Tab 点「🔔 模拟告警」即可看谛听自动排查 + 🧬 知识沉淀 + 🔧 修复动作审批。
+浏览器打开 **http://127.0.0.1:8001** → 「告警排障」Tab 点「🔔 模拟告警」即可看谛听自动排查 + 🧬 知识沉淀 + 🔧 修复动作审批。
 
 > 接真实监控：`.env` 配 `PROMETHEUS_URL` / `LOKI_URL` / `K8S_IN_CLUSTER=true`，并把 Alertmanager webhook 指向 `http://<谛听>/api/alerts`，即真触发。配 `FEISHU_WEBHOOK` 等则结果自动推 IM。
+
+---
+
+## 🚢 部署上线（kang 服务器 · diting.wukangkang.com）
+
+> 下次说「**上线**」就走这套流程。
+> 服务器：`kang`（root@139.196.217.163，`~/.ssh/config` 已配）｜部署目录 `/opt/diting`｜端口 `8001`｜域名 `diting.wukangkang.com`｜SSL 用服务器现有通配证书 `*.wukangkang.com`。
+
+### 一、传代码 + 装依赖（服务器访问 GitHub 不稳，用 rsync 直传）
+
+```bash
+rsync -az --delete \
+  --exclude '.venv/' --exclude '__pycache__/' --exclude '.chroma/' \
+  --exclude '.git/' --exclude '*.pyc' --exclude '.DS_Store' \
+  ./ kang:/opt/diting/
+
+ssh kang 'cd /opt/diting && python3 -m venv .venv && \
+  .venv/bin/pip install -q -U pip && \
+  .venv/bin/pip install -q -r requirements.txt fastapi "uvicorn[standard]" python-multipart'
+```
+
+> `.env`（含百炼 key）随 rsync 一起传过去；若没传，`ssh kang 'vi /opt/diting/.env'` 手动填 `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL`。
+
+### 二、入库知识库
+
+```bash
+ssh kang 'cd /opt/diting && .venv/bin/python scripts/ingest.py --reset'
+```
+
+### 三、systemd 常驻服务（端口 8001）
+
+```bash
+ssh kang 'cat > /etc/systemd/system/diting.service' <<'EOF'
+[Unit]
+Description=DiTing SRE Autopilot (谛听)
+After=network.target
+[Service]
+Type=simple
+WorkingDirectory=/opt/diting
+Environment=PYTHONPATH=/opt/diting/src
+ExecStart=/opt/diting/.venv/bin/python -m uvicorn opscopilot.api:app --host 127.0.0.1 --port 8001
+Restart=always
+RestartSec=5
+[Install]
+WantedBy=multi-user.target
+EOF
+ssh kang 'systemctl daemon-reload && systemctl enable --now diting'
+```
+
+### 四、nginx + SSL（反代 8001，复用通配证书）
+
+```bash
+ssh kang 'cat > /etc/nginx/sites-enabled/diting.wukangkang.com' <<'EOF'
+server {
+    listen 80; server_name diting.wukangkang.com;
+    return 301 https://$host$request_uri;
+}
+server {
+    listen 443 ssl; server_name diting.wukangkang.com;
+    ssl_certificate     /etc/nginx/ssl/_.wukangkang.com.pem;
+    ssl_certificate_key /etc/nginx/ssl/_.wukangkang.com.key;
+    client_max_body_size 50m;            # 允许 PDF/Word 大文件上传
+    location / {
+        proxy_pass http://127.0.0.1:8001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;          # Agent 排障多轮 LLM，避免 504
+        proxy_buffering off;
+    }
+}
+EOF
+ssh kang 'nginx -t && nginx -s reload'
+```
+
+### 五、验证
+
+```bash
+curl https://diting.wukangkang.com/api/kb/status   # → {"chunks":40}
+```
+
+### 🔄 更新上线（改完代码后，每次「上线」只需这两步）
+
+```bash
+rsync -az --delete --exclude '.venv/' --exclude '__pycache__/' --exclude '.chroma/' \
+  --exclude '.git/' --exclude '*.pyc' ./ kang:/opt/diting/
+ssh kang 'systemctl restart diting && systemctl is-active diting'
+```
+
+> 线上地址：**https://diting.wukangkang.com** ｜ 查日志：`ssh kang 'journalctl -u diting -f'` ｜ 改了 nginx 配置要 `ssh kang 'nginx -t && nginx -s reload'`。
 
 ---
 

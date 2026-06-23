@@ -6,7 +6,7 @@
   python scripts/trigger_alert.py latency     # 延迟告警
   python scripts/trigger_alert.py dbpool      # 连接池耗尽
 
-触发后访问 http://127.0.0.1:8000 切到「告警排障」Tab 查看，或 GET /api/incidents。
+触发后访问 http://127.0.0.1:8001 切到「告警排障」Tab 查看，或 GET /api/incidents。
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import json
 import sys
 import urllib.request
 
-URL = "http://127.0.0.1:8000/api/alerts"
+URL = "http://127.0.0.1:8001/api/alerts"
 
 ALERTS = {
     "5xx": {
@@ -59,10 +59,10 @@ def main() -> None:
         r = urllib.request.urlopen(req, timeout=10)
         print(f"✅ 已触发 [{kind}] 告警 → {r.read().decode()}")
         print("谛听正在后台排障，约 30–60s 后：")
-        print("  · 浏览器: http://127.0.0.1:8000 → 「告警排障」Tab")
-        print("  · API:    curl http://127.0.0.1:8000/api/incidents")
+        print("  · 浏览器: http://127.0.0.1:8001 → 「告警排障」Tab")
+        print("  · API:    curl http://127.0.0.1:8001/api/incidents")
     except Exception as e:  # noqa: BLE001
-        print(f"❌ 触发失败（确认 FastAPI 在 8000 运行）: {e}")
+        print(f"❌ 触发失败（确认 FastAPI 在 8001 运行）: {e}")
         sys.exit(1)
 
 

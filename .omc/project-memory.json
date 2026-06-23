@@ -1,0 +1,164 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1782211020094,
+  "projectRoot": "/Users/kang/Desktop/demos/opscopilot",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "pyproject.toml",
+          "requirements.txt"
+        ]
+      },
+      {
+        "name": "C/C++",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "Makefile"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "make build",
+    "testCommand": "make test",
+    "lintCommand": "ruff check",
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "scripts",
+      "src",
+      "tests"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "data": {
+      "path": "data",
+      "purpose": "Data files",
+      "fileCount": 0,
+      "lastAccessed": 1782211020081,
+      "keyFiles": []
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 3,
+      "lastAccessed": 1782211020081,
+      "keyFiles": [
+        "ARCHITECTURE.md",
+        "INTERVIEW_STORIES.md",
+        "LEARNING_ROADMAP.md"
+      ]
+    },
+    "mcp": {
+      "path": "mcp",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1782211020082,
+      "keyFiles": [
+        "run_github_server.py"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 5,
+      "lastAccessed": 1782211020082,
+      "keyFiles": [
+        "demo_agent.py",
+        "demo_rag.py",
+        "eval_rag.py",
+        "ingest.py",
+        "trigger_alert.py"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 0,
+      "lastAccessed": 1782211020083,
+      "keyFiles": []
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 2,
+      "lastAccessed": 1782211020083,
+      "keyFiles": [
+        "test_logic.py",
+        "test_tools.py"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "README.md",
+      "accessCount": 2,
+      "lastAccessed": 1782211309983,
+      "type": "file"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "accessCount": 1,
+      "lastAccessed": 1782211159361,
+      "type": "file"
+    },
+    {
+      "path": "docs/product/00-OVERVIEW.md",
+      "accessCount": 1,
+      "lastAccessed": 1782211168970,
+      "type": "file"
+    },
+    {
+      "path": "docs/product/01-POSITIONING.md",
+      "accessCount": 1,
+      "lastAccessed": 1782211169243,
+      "type": "file"
+    },
+    {
+      "path": "docs/product/02-MARKET.md",
+      "accessCount": 1,
+      "lastAccessed": 1782211169597,
+      "type": "file"
+    },
+    {
+      "path": "docs/product/03-FEATURES.md",
+      "accessCount": 1,
+      "lastAccessed": 1782211169849,
+      "type": "file"
+    },
+    {
+      "path": "docs/product/04-ARCHITECTURE.md",
+      "accessCount": 1,
+      "lastAccessed": 1782211170243,
+      "type": "file"
+    },
+    {
+      "path": "docs/product/05-ROADMAP.md",
+      "accessCount": 1,
+      "lastAccessed": 1782211170493,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

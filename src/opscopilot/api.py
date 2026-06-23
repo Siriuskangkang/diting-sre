@@ -3,7 +3,7 @@
 把 Gradio 换成 REST + OD 设计的自定义前端。复用 rag/ (问答) 与 agents/ (排障) 核心。
 
 运行:
-  uvicorn opscopilot.api:app --port 8000 --reload
+  uvicorn opscopilot.api:app --port 8001 --reload
   或: python -m opscopilot.api
 """
 from __future__ import annotations
@@ -192,4 +192,4 @@ if WEB_DIR.exists():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("opscopilot.api:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("opscopilot.api:app", host="0.0.0.0", port=8001, reload=False)

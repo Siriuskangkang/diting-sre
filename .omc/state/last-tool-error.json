@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"ssh kang 'cat > /etc/systemd/system/diting.service <<EOF\\n[Unit]\\nDescription=DiTing SRE Autopilot (谛听)\\nAfter=network.target\\n\\n[Service]\\nType=simple\\nWorkingDirectory=/opt/diting\\nEnvir...",
+  "error": "Exit code 7\nCreated symlink /etc/systemd/system/multi-user.target.wants/diting.service → /etc/systemd/system/diting.service.\nservice: active\n8001 本地 -> HTTP 000",
+  "timestamp": "2026-06-23T10:38:54.309Z",
+  "retry_count": 1
+}
