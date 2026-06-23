@@ -1,5 +1,12 @@
 # 🔔 谛听 DiTing · SRE 排障自动驾驶仪
 
+[![CI](https://img.shields.io/github/actions/workflow/status/Siriuskangkang/diting-sre/ci.yml?label=CI&logo=githubactions&logoColor=white)](https://github.com/Siriuskangkang/diting-sre/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Siriuskangkang/diting-sre/blob/main/LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-状态机编排-2DD4BF.svg)](https://github.com/langchain-ai/langgraph)
+[![阿里云百炼](https://img.shields.io/badge/LLM-阿里云百炼-22D3EE.svg)](https://bailian.console.aliyun.com/)
+[![GitHub stars](https://img.shields.io/github/stars/Siriuskangkang/diting-sre?style=social)](https://github.com/Siriuskangkang/diting-sre/stargazers)
+
 > **听辨故障，自动驾驶排障。**
 
 谛听是一个面向 SRE / DevOps 的 **AI 排障自动驾驶仪**——它不等你提问，而是**接收告警、主动介入**：多个 Agent 自主调监控 / 日志 / k8s / 知识库取证，输出根因与修复方案，把排障结论沉淀回知识库（越用越强），还能规划修复动作、人工审批后自动执行。

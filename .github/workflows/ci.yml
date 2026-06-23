@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip
+          pip install langchain-core langchain-text-splitters langchain-community \
+                      langchain-chroma chromadb rank-bm25 numpy httpx \
+                      python-dotenv pydantic pytest
+
+      - name: Install package (editable, no deps)
+        run: pip install -e . --no-deps
+
+      - name: Syntax check (all modules)
+        run: python -m compileall -q src scripts mcp
+
+      - name: Run unit tests
+        run: pytest -q
