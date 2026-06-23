@@ -1,0 +1,69 @@
+{
+  "_comment": "RAG 评估数据集（RAGAS 格式）。只填 question + ground_truth；answer 和 contexts 由 pipeline 运行时生成。设计要点：问题尽量贴近真实问法（口语化、不直接复述 runbook 标题），才能检验检索质量。",
+  "samples": [
+    {
+      "question": "线上服务 5xx 错误率突然飙到 5%，怎么排查？",
+      "ground_truth": "先区分错误类型（500 多为自身 bug，502/504 多为下游或网关问题），对齐时间线看是否与发布/配置变更重合，再查服务日志异常堆栈、下游依赖健康度、容器是否 OOM 或频繁重启；修复时优先回滚或降级，再定位根因。"
+    },
+    {
+      "question": "接口 P99 延迟突然从 80ms 涨到 800ms，但成功率没怎么掉，是什么原因？",
+      "ground_truth": "常见原因是慢查询/全表扫描、热点行锁竞争、CPU 或 GC 资源瓶颈、批量任务挤占资源、连接池耗尽。排查时要区分是少数请求极慢还是全部变慢，再用 APM 链路定位耗时集中段，查慢查询、GC 日志和连接池。"
+    },
+    {
+      "question": "Pod 一直 CrashLoopBackOff 不停重启怎么办？",
+      "ground_truth": "用 kubectl describe pod 看 Events 确认是 OOM、探针失败还是退出码非 0；用 kubectl logs --previous 看上次崩溃前的日志；检查 liveness 探针 initialDelaySeconds 是否小于真实启动耗时、资源 limit 是否过小、配置和依赖是否就绪。"
+    },
+    {
+      "question": "数据库连接池报 Cannot get a connection，但数据库 CPU 不高，什么情况？",
+      "ground_truth": "通常是连接池耗尽：连接泄漏（手动获取的连接未归还）、长事务/慢 SQL 长期占用、池上限过低、批量任务抢占、或脏连接。排查看连接池 active 是否达上限、线程是否卡在 getConnection、DB 侧 PROCESSLIST 是否有大量慢会话，并审查手动获取连接的代码。"
+    },
+    {
+      "question": "容器被 OOMKilled 反复重启，退出码 137，怎么定位？",
+      "ground_truth": "先确认是 OOMKilled 而非应用 bug（Exit Code 137），对比内存 limit 与实际用量，抓堆 dump 分析泄漏引用链或大对象，查是否伴随流量高峰和本地缓存无上限。常见根因是内存泄漏、大结果集一次性载入、limit 过低、缓存无上限。"
+    },
+    {
+      "question": "节点报 No space left on device，但 df -h 显示磁盘还有空间，为什么？",
+      "ground_truth": "多半是 inode 耗尽（大量小文件堆积），而不是磁盘空间不足。要用 df -i 看 inode 使用率，用 find 统计目录下文件数定位小文件堆积点，并检查日志是否配置轮转、应用是否把数据写到了非 Volume 的临时目录。"
+    },
+    {
+      "question": "Redis 内存快满了，evicted_keys 一直涨，缓存命中率掉得很厉害，怎么处理？",
+      "ground_truth": "先 INFO memory/info stats 看 used_memory、maxmemory、evicted_keys 增速和碎片率；用 --bigkeys 定位大 key；抽查 TTL 确认是否有大量 key 未设过期。常见根因是缓存无 TTL 冷数据堆积、大 key、maxmemory-policy 不合理。修复要扩容、给所有 key 加 TTL、拆分大 key。"
+    },
+    {
+      "question": "服务凌晨突然对所有调用方报错，客户端说证书过期了，怎么查？",
+      "ground_truth": "确认错误是否精确指向证书过期（expired / unknown CA / not yet valid）；用 openssl s_client 查看服务端证书有效期和证书链；检查 cert-manager 等自动续期组件是否失败；确认节点时间是否漂移。修复需手动续期重新部署，并建立到期前分级告警。"
+    },
+    {
+      "question": "怎么做能防止 5xx 故障因为发布引起的大面积影响？",
+      "ground_truth": "发布走灰度，配合自动告警和一键回滚；关键接口加熔断、降级、超时；对下游依赖做健康检查和自动故障转移。"
+    },
+    {
+      "question": "慢 SQL 导致接口变慢，临时和长期分别怎么处理？",
+      "ground_truth": "临时：kill 长查询止血，补索引或加 LIMIT；长期：优化 SQL 结构、补全索引、走 DBA 评审机制，并配慢查询阈值告警。"
+    },
+    {
+      "question": "K8s 里 liveness 探针设太严导致 Pod 一直被重启，怎么改？",
+      "ground_truth": "调大 initialDelaySeconds 和 failureThreshold，或用 readiness 探针代替 liveness 探针；探针参数要基于真实启动耗时设置，上线前压测验证。"
+    },
+    {
+      "question": "怎么防止数据库连接泄漏再次发生？",
+      "ground_truth": "统一用框架托管事务，禁止裸 JDBC 手动管理连接；手动获取的连接必须 try-with-resources / finally close；启用连接泄漏检测（如 Hikari 的 leakDetectionThreshold）和池满告警。"
+    },
+    {
+      "question": "本地缓存导致内存涨，怎么根治？",
+      "ground_truth": "本地缓存必须加 size/weight 上限和过期策略（LRU + TTL），大缓存优先用 Redis；上线前压测确认峰值内存，limit 预留 30% 余量，并设置内存使用率告警。"
+    },
+    {
+      "question": "怎么避免磁盘再次被日志撑爆？",
+      "ground_truth": "日志强制按大小+时间轮转并设保留份数上限；应用写入路径统一挂载 Volume，禁止写容器可写层；配置磁盘空间和 inode 双指标告警；定期清理构建产物和历史镜像。"
+    },
+    {
+      "question": "Redis 缓存击穿怎么预防？",
+      "ground_truth": "热点 key 加互斥锁或逻辑过期，防止过期瞬间大量请求同时穿透回源；所有缓存 key 必须有 TTL，并配置内存使用率和驱逐速率告警。"
+    },
+    {
+      "question": "证书自动续期失败但没有告警，导致服务挂了，怎么改进？",
+      "ground_truth": "建立证书到期前 30/14/7 天分级告警，且覆盖续期失败场景（不只是到期）；关键证书用 cert-manager 自动续期并配续期失败告警；节点时间用 NTP 同步并纳入监控。"
+    }
+  ]
+}

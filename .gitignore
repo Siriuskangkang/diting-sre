@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# 环境 & 密钥
+.env
+.venv/
+venv/
+env/
+
+# 向量库持久化
+.chroma/
+
+# 评估产物
+data/eval/results/
+
+# 编辑器
+.vscode/
+.idea/
+.ipynb_checkpoints/
+.DS_Store

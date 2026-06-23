@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>谛听 DiTing · SRE 排障自动驾驶仪</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>🔔</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="nav-icon nav-logo" data-tooltip="谛听 DiTing">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg>
+    </div>
+    <div class="nav-icon active" data-tab="rag" data-tooltip="RAG 问答">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+    </div>
+    <div class="nav-icon" data-tab="agent" data-tooltip="Agent 排障">
+      <svg viewBox="0 0 24 24"><circle cx="5" cy="5" r="3"/><circle cx="19" cy="5" r="3"/><circle cx="12" cy="19" r="3"/><line x1="6.5" y1="7.5" x2="10.5" y2="16.5"/><line x1="17.5" y1="7.5" x2="13.5" y2="16.5"/><line x1="7.5" y1="4" x2="16.5" y2="4"/></svg>
+    </div>
+    <div class="nav-icon" data-tab="incidents" data-tooltip="告警排障">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+    </div>
+    <div class="nav-icon" data-tab="kb" data-tooltip="知识库">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="9" ry="3"/><path d="M3 6v6c0 1.66 4.03 3 9 3s9-1.34 9-3V6"/><path d="M3 12v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-icon" data-tooltip="设置">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a1.65 1.65 0 01-1.51 1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-brand">谛听<span style="color:var(--accent);font-weight:600;margin-left:6px">DiTing</span></span>
+      <span class="topbar-model">qwen-plus</span>
+      <span class="topbar-status"><span class="status-dot"></span>ONLINE</span>
+      <span class="topbar-clock">--:--:-- CST</span>
+    </header>
+
+    <div class="content">
+
+      <!-- === RAG 问答 View === -->
+      <div class="view-panel active" data-view="rag">
+        <div class="flex-row flex-between mb-16">
+          <h2 class="section-h2" style="margin-bottom:0">RAG 问答</h2>
+          <div class="search-mode">
+            <span class="mode-chip active" data-mode="hybrid">混合检索</span>
+            <span class="mode-chip" data-mode="rerank">重排序</span>
+          </div>
+        </div>
+        <div class="card mb-16" style="min-height:400px;max-height:calc(100vh - 240px);overflow-y:auto">
+          <div class="chat-list" id="chat-list"></div>
+        </div>
+        <div class="chat-input-wrap">
+          <textarea class="chat-input" id="chat-input" placeholder="输入你的问题，例如：订单服务 5xx 错误如何排查？" rows="1"></textarea>
+          <button class="btn btn-accent" id="send-btn">发送</button>
+        </div>
+      </div>
+
+      <!-- === Agent 排障 View === -->
+      <div class="view-panel" data-view="agent">
+        <h2 class="section-h2">Agent 排障</h2>
+        <div class="card mb-16">
+          <textarea class="trouble-input" id="trouble-input" placeholder="描述故障现象…">production 环境 order-service 5xx 飙升，Pods CrashLoopBackOff，伴随 OOMKilled，排查连接池耗尽根因</textarea>
+          <div class="flex-row mt-16">
+            <button class="btn btn-accent" id="start-btn">▶ 开始排障</button>
+            <button class="btn btn-ghost" id="reset-btn">重置</button>
+          </div>
+        </div>
+
+        <!-- Node Flow -->
+        <div class="card mb-16">
+          <div class="flow-container" id="agent-flow">
+            <div class="flow-node" id="node-triage">
+              <div class="flow-circle"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              <div class="flow-label">Triage</div>
+            </div>
+            <div class="flow-connector" id="conn-1">
+              <svg viewBox="0 0 50 4"><line x1="0" y1="2" x2="46" y2="2" class="flow-line"/><polygon points="46,0 50,2 46,4" class="flow-arrow"/></svg>
+            </div>
+            <div class="flow-node" id="node-supervisor">
+              <div class="flow-circle"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+              <div class="flow-label">Supervisor</div>
+            </div>
+            <div class="flow-connector bidi" id="conn-bidi">
+              <svg viewBox="0 0 60 36">
+                <line x1="0" y1="8" x2="56" y2="8" class="flow-line" id="bidi-fwd"/>
+                <polygon points="56,4 60,8 56,12" class="flow-arrow" id="bidi-fwd-arrow"/>
+                <line x1="60" y1="28" x2="4" y2="28" class="flow-line" id="bidi-rev"/>
+                <polygon points="4,32 0,28 4,24" class="flow-arrow" id="bidi-rev-arrow"/>
+              </svg>
+            </div>
+            <div class="flow-node" id="node-investigate">
+              <div class="flow-circle"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
+              <div class="flow-label">Investigate</div>
+            </div>
+            <div class="flow-connector" id="conn-3">
+              <svg viewBox="0 0 50 4"><line x1="0" y1="2" x2="46" y2="2" class="flow-line"/><polygon points="46,0 50,2 46,4" class="flow-arrow"/></svg>
+            </div>
+            <div class="flow-node" id="node-report">
+              <div class="flow-circle"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+              <div class="flow-label">Report</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evidence + Report -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="card">
+            <div class="card-header"><span class="card-title">证据时间线</span></div>
+            <div class="timeline" id="timeline-list">
+              <div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center">点击「开始排障」启动 Agent 工作流</div>
+            </div>
+          </div>
+          <div class="card" id="report-card" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- === 告警排障 View === -->
+      <div class="view-panel" data-view="incidents">
+        <div class="flex-between mb-16">
+          <h2 class="section-h2" style="margin-bottom:0">告警排障</h2>
+          <div class="flex-row">
+            <button class="btn btn-accent" id="mock-alert-btn">🔔 模拟告警触发排障</button>
+            <button class="btn btn-ghost" id="refresh-incidents-btn">刷新</button>
+          </div>
+        </div>
+        <div class="stat-grid" id="incidents-stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px"></div>
+        <div id="incidents-list"></div>
+      </div>
+
+      <!-- === 知识库 View === -->
+      <div class="view-panel" data-view="kb">
+        <h2 class="section-h2">知识库</h2>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-chunks">-</div>
+            <div class="stat-label">Chunks</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-docs">-</div>
+            <div class="stat-label">Documents</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">1024</div>
+            <div class="stat-label">Dimensions</div>
+          </div>
+        </div>
+        <div class="upload-zone" id="upload-zone">
+          <svg viewBox="0 0 24 24" class="upload-icon" style="width:32px;height:32px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>拖拽文件到此处上传，或 <strong>点击选择文件</strong></p>
+          <p style="font-size:11px;margin-top:4px">支持 PDF / Word / Excel / 图片 / Markdown / TXT / CSV 等（由百炼解析）</p>
+          <input type="file" id="file-input" multiple hidden accept=".md,.markdown,.txt,.pdf,.docx,.doc,.xlsx,.xls,.csv,.json,.epub,.mobi,.png,.jpg,.jpeg,.bmp,.gif,.html,.htm">
+        </div>
+        <div class="card">
+          <div class="flex-between mb-12">
+            <span class="card-title">文档列表</span>
+            <button class="btn btn-danger btn-sm" id="clear-kb-btn">清空知识库</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="kb-table">
+              <thead>
+                <tr><th>文件名</th><th>Chunks</th><th>状态</th><th>入库时间</th><th>操作</th></tr>
+              </thead>
+              <tbody id="kb-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
